@@ -10,15 +10,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Test">
         <activity
-            android:name=".hirayclay.MainActivity"
+            android:name=".stone.pile.activity.MainActivity"
             android:exported="true">
+
+        </activity>
+        <activity android:name=".hirayclay.VerticalActivity" />
+        <activity android:name=".hirayclay.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".hirayclay.VerticalActivity"/>
     </application>
 
 </manifest>

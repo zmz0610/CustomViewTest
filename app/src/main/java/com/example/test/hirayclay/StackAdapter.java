@@ -63,7 +63,7 @@ public class StackAdapter extends RecyclerView.Adapter {
             return new ViewHolder(inflater.inflate(R.layout.vertical_item_card, parent, false));
         }
         if (viewType == 0) {
-            return new ViewHolder1(inflater.inflate(R.layout.item_card, parent, false));
+            return new ViewHolder1(inflater.inflate(R.layout.item_card_first, parent, false));
         } else {
             return new ViewHolder(inflater.inflate(R.layout.item_card, parent, false));
         }

@@ -293,7 +293,9 @@ class StackLayoutManager extends RecyclerView.LayoutManager {
             addView(view);
             measureChildWithMargins(view, 0, 0);
             int left = 0;
-            if (i != currPos) {
+            if (i < currPos) {
+                left = -view.getMeasuredWidth();
+            } else if (i != currPos) {
                 left = (int) (left(i) - (1 - scale) * view.getMeasuredWidth() / 2);
             }
 
@@ -509,15 +511,21 @@ class StackLayoutManager extends RecyclerView.LayoutManager {
 
                 int baseStart = (int) (mSpace * maxStackCount + mUnit - tail + closestBaseItemScale * (mUnit - mSpace) + mSpace);
                 left = (int) (baseStart + (position - currPos - 2) * mUnit - (position - currPos - 2) * (1 - secondaryScale) * (mUnit - mSpace));
-                if (true)
-                    Log.i(TAG, "ltr: currPos " + currPos
-                            + "  pos:" + position
-                            + "  left:" + left
-                            + "   baseStart" + baseStart
-                            + " currPos+1:" + left(currPos + 1));
+
             }
             left = left <= 0 ? 0 : left;
         }
+        if (true)
+            Log.i(TAG,
+                    "  left:" + left
+                            + "  position:" + position
+//                    + "   baseStart"
+//                    "ltr: currPos " + currPos
+//                    + "  pos:" + position
+//                    + "  left:" + left
+//                    + "   baseStart" + baseStart
+//                    + " currPos+1:" + left(currPos + 1)
+            );
         return left;
     }
 
