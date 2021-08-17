@@ -1,5 +1,6 @@
 package com.example.test.hirayclay;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -7,8 +8,11 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -89,18 +93,18 @@ public class MainActivity extends AppCompatActivity {
                 for (int i = 0; i < viewList.size(); i++) {
 //                for (int i = viewList.size()-1; i >=0; i--) {
                     Log.i(TAG, "lastCompletelyVisibleItemPosition++~" + lastCompletelyVisibleItemPosition + "view~~" + viewList.size());
-                    Log.i(TAG, "i---"+i + "+++maxShowcount++++" + maxShowcount + "+++lastVisibleItemPosition~~" + lastVisibleItemPosition);
-                    View view = recyclerView.getChildAt(i);
+                    Log.i(TAG, "i---" + i + "+++maxShowcount++++" + maxShowcount + "+++lastVisibleItemPosition~~" + lastVisibleItemPosition);
+                    View view = recyclerView.getLayoutManager().findViewByPosition(i);
                     if (view == null) {
                         return;
                     }
                     if (i >= maxShowcount - 1) {
                         //右边做多显示两个其他的重合在最后一个
                         View lastView;
-                        if (i==viewList.size()-1){
-                             lastView = recyclerView.getChildAt(i );
-                        }else{
-                             lastView = recyclerView.getChildAt(i -1);
+                        if (i == viewList.size() - 1) {
+                            lastView = recyclerView.getLayoutManager().findViewByPosition(i);
+                        } else {
+                            lastView = recyclerView.getLayoutManager().findViewByPosition(i-1);
                         }
 //                        View lastView = recyclerView.getChildAt(i -1);
                         if (i - lastCompletelyVisibleItemPosition == 1) {
@@ -110,8 +114,10 @@ public class MainActivity extends AppCompatActivity {
                             view.setScaleY(scale);
                             view.setAlpha(alpha);
                             int left = 0;
+//                           int offset = (int) (view.getRight() - screenWidth+(screenWidth-lastView.getRight())/2+(view.getWidth() - view.getWidth() * scale) / 2);
                             left = (int) (view.getRight() - ((screenWidth + lastView.getRight()) / 2) - (view.getWidth() - view.getWidth() * scale) / 2);
                             view.setTranslationX(-left);
+//                            view.setTranslationX(-offset);
                         } else if (i == maxShowcount - 2) {
                             float scale = 0.4f;
                             float alpha = 0.4f;
@@ -153,7 +159,32 @@ public class MainActivity extends AppCompatActivity {
         });
 
         src_atop2 = findViewById(R.id.src_atop2);
-        ll_src_atop2 = findViewById(R.id.ll_src_atop2);
+        Context context = MainActivity.this;
+        RelativeLayout relativeLayout = new RelativeLayout(context);
+        FrameLayout.LayoutParams lp0 = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+        relativeLayout.setLayoutParams(lp0);
+        for (int i = 0; i < 7; i++) {
+            if (i == 0) {
+                View view = initFirstView(relativeLayout);
+                view.setId(1000 + i);
+                RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(view.getMeasuredWidth(), view.getMeasuredHeight());
+                lp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);//与父容器的左侧对齐
+                lp.addRule(RelativeLayout.ALIGN_PARENT_TOP);//与父容器的上侧对齐
+                lp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);//与父容器的上侧对齐
+                view.setLayoutParams(lp);//设置布局参数
+                relativeLayout.addView(view);
+            }else{
+                View childView2 = relativeLayout.getChildAt(i-1);
+                View view = initSecondView();
+                view.setId(1000 + i);
+                RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+                lp.addRule(RelativeLayout.RIGHT_OF,  childView2.getId());//与父容器的左侧对齐
+                lp.addRule(RelativeLayout.ALIGN_PARENT_TOP);//与父容器的上侧对齐
+                view.setLayoutParams(lp);//设置布局参数
+                relativeLayout.addView(view);
+            }
+        }
+        src_atop2.addView(relativeLayout);
         Handler handler = new Handler();
         src_atop2.setHandler(handler);
         src_atop2.setOnScrollStateChangedListener(new ScrollListenerHorizontalScrollView.ScrollViewListener() {
@@ -163,10 +194,24 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onScrollChanged2(ScrollListenerHorizontalScrollView scrollListenerHorizontalScrollView, int scrollX, int y, int oldx, int oldy) {
-//                scrollView(scrollX, oldx, y, oldy);
+            public void onScrollChanged2(ScrollListenerHorizontalScrollView scrollListenerHorizontalScrollView, int scrollX, int scrollY, int oldx, int oldy) {
+                scrollView(scrollX, scrollY, oldx, oldy);
             }
         });
+    }
+
+    private View initFirstView(RelativeLayout relativeLayout) {
+        View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.item_card_first, relativeLayout, false);
+        return view;
+    }
+
+    private View initSecondView() {
+        View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.item_card, null, false);
+        return view;
+    }
+
+    private void scrollView(int scrollX, int scrollY, int oldx, int oldy) {
+//        src_atop2.getChildAt()
     }
 
     @Override
@@ -175,73 +220,6 @@ public class MainActivity extends AppCompatActivity {
 //            scrollView(0, 0, 0, 0);
         }
         super.onWindowFocusChanged(hasFocus);
-    }
-
-    private void scrollView(int scrollX, int oldx, int y, int oldy) {
-        int showCount = 4;
-        int count = ll_src_atop2.getChildCount();
-        int firstw = ll_src_atop2.getChildAt(0).getWidth();
-        int width2 = ll_src_atop2.getChildAt(1).getWidth();
-        int curPosition = 0;
-        Log.i(TAG, oldx + "~~~~" + scrollX + "~~~~~" + firstw);
-        if (oldx > scrollX) {
-            //左滑
-        } else if (scrollX > firstw * 2 / 3) {
-            curPosition = (scrollX - firstw) / width2 + 1;
-            Log.i(TAG, curPosition + "!!!!!");
-            return;
-        }
-        curPosition = (scrollX - firstw) / width2 + 1;
-        Log.i(TAG, curPosition + "!!!!!");
-        int allWidth = 0;
-        int widthCount = 0;
-        for (int i = curPosition; i < count; i++) {
-            View view = ll_src_atop2.getChildAt(i);
-            int left = 0;
-            left = allWidth;
-            int right = left + view.getMeasuredWidth();
-            if (right < ScreenUtil.getScreenWidth(view.getContext())) {
-                allWidth = right;
-                widthCount += 1;
-            }
-        }
-        Log.i(TAG, curPosition + "~~~~~" + widthCount + "~~~~~~~~~" + allWidth);
-        for (int i = curPosition; i < count; i++) {
-            View view = ll_src_atop2.getChildAt(i);
-            if (i >= curPosition + widthCount && i < showCount) {
-                float scale = (float) (1 - 0.1 * (showCount - i));
-                float alpha = (float) (1 - 0.1 * (showCount - i));
-                alpha = alpha <= 0.001f ? 0 : alpha;
-                view.setAlpha(alpha);
-                view.setScaleY(scale);
-                view.setScaleX(scale);
-                int left = 0;
-                left = ScreenUtil.getScreenWidth(view.getContext()) - ScreenUtil.dp2px(view.getContext(), 15) - view.getMeasuredWidth();
-                int top = 0;
-                int right = left + view.getMeasuredWidth();
-                int bottom = top + view.getMeasuredHeight();
-                view.layout(left, top, right, bottom);
-            } else {
-                int left = 0;
-                view.setAlpha(1);
-                view.setScaleY(1);
-                view.setScaleX(1);
-                if (i > curPosition) {
-                    for (int j = curPosition; j < i; j++) {
-                        View viewj = ll_src_atop2.getChildAt(j);
-                        left += viewj.getWidth();
-                    }
-                }
-                int top = 0;
-                int right = left + view.getMeasuredWidth();
-                int bottom = top + view.getMeasuredHeight();
-                view.layout(left, top, right, bottom);
-            }
-
-//                    layoutDecoratedWithMargins(view, left, top, right, bottom);
-
-
-        }
     }
 
     public void resetDefault() {
